@@ -14,7 +14,7 @@ ZONE="us-central1-a"
 REGION="us-central1"
 
 # Tipo da máquina (e2-micro é free tier elegível, e2-medium é melhor para build)
-MACHINE_TYPE="e2-medium"
+MACHINE_TYPE="e2-standard-2"
 
 # Seu usuário do sistema (para SSH) - geralmente é o seu email sem @gmail.com ou 'ubuntu'
 SSH_USER="ubuntu"
@@ -63,7 +63,7 @@ else
         --image-project=ubuntu-os-cloud \
         --tags=http-server,https-server \
         --address=$STATIC_IP \
-        --boot-disk-size=20GB
+        --boot-disk-size=30GB
     
     echo "⏳ Aguardando a VM inicializar (30s)..."
     sleep 30
