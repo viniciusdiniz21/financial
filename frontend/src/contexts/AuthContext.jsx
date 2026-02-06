@@ -1,5 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 const AuthContext = createContext({});
 
@@ -9,14 +8,9 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const api = axios.create({
-        baseURL: 'http://localhost:8000/api/v1',
-    });
-
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
-            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             fetchUserProfile();
         } else {
             setLoading(false);
@@ -45,7 +39,7 @@ export function AuthProvider({ children }) {
             const { access_token } = response.data;
 
             localStorage.setItem('token', access_token);
-            api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+            // api header update handled by interceptor
 
             await fetchUserProfile();
 
@@ -73,7 +67,6 @@ export function AuthProvider({ children }) {
 
     const logout = () => {
         localStorage.removeItem('token');
-        delete api.defaults.headers.common['Authorization'];
         setUser(null);
     };
 

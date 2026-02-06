@@ -99,8 +99,16 @@ gcloud compute scp /tmp/project_deploy.tar.gz $INSTANCE_NAME:~/ --zone=$ZONE
 
 echo "🔹 Descompactando no servidor..."
 gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command "
-    rm -rf ~/app && mkdir -p ~/app
+    # Usa SUDO para ter força bruta e apagar arquivos criados pelo Docker (root)
+    sudo rm -rf ~/app
+    
+    # Cria a pasta novamente como usuário normal
+    mkdir -p ~/app
+    
+    # Descompacta
     tar -xzf ~/project_deploy.tar.gz -C ~/app
+    
+    # Remove o arquivo compactado
     rm ~/project_deploy.tar.gz
 "
 
