@@ -91,11 +91,11 @@ gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command "
 
 # 6. Upload Otimizado (Empacota tudo antes de enviar)
 echo "🔹 Empacotando arquivos para upload rápido..."
-# Cria um arquivo compactado excluindo as pastas pesadas
-tar -czf project_deploy.tar.gz --exclude='node_modules' --exclude='venv' --exclude='.git' --exclude='__pycache__' .
+# Usamos /tmp para evitar erro de "file changed as we read it"
+tar -czf /tmp/project_deploy.tar.gz --exclude='node_modules' --exclude='venv' --exclude='.git' --exclude='__pycache__' .
 
 echo "🔹 Enviando pacote para o servidor..."
-gcloud compute scp project_deploy.tar.gz $INSTANCE_NAME:~/ --zone=$ZONE
+gcloud compute scp /tmp/project_deploy.tar.gz $INSTANCE_NAME:~/ --zone=$ZONE
 
 echo "🔹 Descompactando no servidor..."
 gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command "
