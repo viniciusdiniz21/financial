@@ -77,8 +77,9 @@ gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command "
     # Instalar Docker
     if ! command -v docker &> /dev/null; then
         echo 'Instalando Docker...'
-        sudo apt-get install -y docker.io docker-compose-plugin
-        sudo usermod -aG docker \$USER
+        curl -fsSL https://get.docker.com -o get-docker.sh
+        sudo sh get-docker.sh
+        sudo usermod -aG docker $USER
     fi
 
     # Instalar Nginx
@@ -88,10 +89,23 @@ gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command "
     fi
 "
 
-# 6. Upload dos Arquivos do Projeto
-echo "🔹 Enviando arquivos do projeto para o servidor..."
-# Copia tudo da pasta atual, exceto node_modules e .git (crie um arquivo .gcloudignore se quiser filtrar melhor)
-gcloud compute scp --recurse . $INSTANCE_NAME:~/app --zone=$ZONE
+# 6. Upload Otimizado (Empacota tudo antes de enviar)
+echo "🔹 Empacotando arquivos para upload rápido..."
+# Cria um arquivo compactado excluindo as pastas pesadas
+tar -czf project_deploy.tar.gz --exclude='node_modules' --exclude='venv' --exclude='.git' --exclude='__pycache__' .
+
+echo "🔹 Enviando pacote para o servidor..."
+gcloud compute scp project_deploy.tar.gz $INSTANCE_NAME:~/ --zone=$ZONE
+
+echo "🔹 Descompactando no servidor..."
+gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command "
+    rm -rf ~/app && mkdir -p ~/app
+    tar -xzf ~/project_deploy.tar.gz -C ~/app
+    rm ~/project_deploy.tar.gz
+"
+
+# Limpeza local
+rm project_deploy.tar.gz
 
 # 7. Configuração Final e Start
 echo "🔹 Iniciando Containers e Configurando Proxy..."

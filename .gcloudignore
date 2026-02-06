@@ -1,0 +1,10 @@
+.git
+.gitignore
+node_modules/
+venv/
+__pycache__/
+dist/
+build/
+.env
+.DS_Store
+deploy.sh
