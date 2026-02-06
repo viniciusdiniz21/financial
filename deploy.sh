@@ -89,31 +89,26 @@ gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command "
     fi
 "
 
-# 6. Upload Otimizado (Empacota tudo antes de enviar)
-echo "🔹 Empacotando arquivos para upload rápido..."
-# Usamos /tmp para evitar erro de "file changed as we read it"
+# 6. Upload Otimizado
+echo "🔹 Empacotando arquivos..."
+# Cria pacote localmente em /tmp
 tar -czf /tmp/project_deploy.tar.gz --exclude='node_modules' --exclude='venv' --exclude='.git' --exclude='__pycache__' .
 
-echo "🔹 Enviando pacote para o servidor..."
+echo "🔹 Enviando pacote..."
 gcloud compute scp /tmp/project_deploy.tar.gz $INSTANCE_NAME:~/ --zone=$ZONE
 
-echo "🔹 Descompactando no servidor..."
+echo "🔹 Descompactando..."
 gcloud compute ssh $INSTANCE_NAME --zone=$ZONE --command "
-    # Usa SUDO para ter força bruta e apagar arquivos criados pelo Docker (root)
     sudo rm -rf ~/app
-    
-    # Cria a pasta novamente como usuário normal
     mkdir -p ~/app
-    
-    # Descompacta
     tar -xzf ~/project_deploy.tar.gz -C ~/app
     
-    # Remove o arquivo compactado
-    rm ~/project_deploy.tar.gz
+    # O PULO DO GATO ESTÁ AQUI: '-f'
+    rm -f ~/project_deploy.tar.gz
 "
 
 # Limpeza local
-rm project_deploy.tar.gz
+rm -f /tmp/project_deploy.tar.gz
 
 # 7. Configuração Final e Start
 echo "🔹 Iniciando Containers e Configurando Proxy..."
